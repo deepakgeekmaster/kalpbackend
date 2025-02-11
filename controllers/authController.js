@@ -3,24 +3,92 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const PushToken = require('../models/PushToken'); 
+const crypto = require('crypto');
+const axios = require('axios');
+
+const POSTMARK_SERVER_TOKEN = "f3ea7eb0-1eda-440f-9287-78d1a9158fba";
+const SENDER_EMAIL = "deepak@geekmaster.io"
+
+const unverifiedUsers = new Map();
+
+const sendVerificationEmail = async (email, verificationCode) => {
+  try {
+      await axios.post("https://api.postmarkapp.com/email", {
+          From: SENDER_EMAIL,
+          To: email,
+          Subject: "Verify Your Email",
+          TextBody: `Your verification code is: ${verificationCode}`,
+      }, {
+          headers: {
+              "X-Postmark-Server-Token": POSTMARK_SERVER_TOKEN,
+              "Content-Type": "application/json",
+          }
+      });
+
+      console.log(`Verification email sent to ${email}`);
+  } catch (error) {
+      console.error("Error sending email:", error.response?.data || error.message);
+  }
+}
 
 const register = async (req, res) => {
   const { email, phone, password, gender, username } = req.body;
 
   try {
-    if (req.cookies.token) {
-      return res.status(400).json({ message: 'You are already signed up and logged in' });
+    if (unverifiedUsers.has(email)) {
+        return res.status(400).json({ message: "A verification email has already been sent. Please verify your email." });
     }
-    const result = await authService.registerUser({ username, email, phone, password, gender });
-    res.cookie('token', result.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 31536000000,
-    });
-    res.status(201).json({ message: result.message, tokensecret: result.token });
+    const verificationCode = crypto.randomInt(100000, 999999);
+    unverifiedUsers.set(email, { username, email, phone, password, gender, verificationCode });
+
+    await sendVerificationEmail(email, verificationCode);
+
+    
+    res.status(200).json({ message: "A verification email has been sent. Please check your inbox." });
 
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+const verifyEmail = async (req, res) => {
+  const { email, code } = req.body;
+  const userData = unverifiedUsers.get(email);
+
+  if (!userData) {
+      return res.status(404).json({ message: "No pending verification for this email." });
+  }
+
+  if (userData.verificationCode !== parseInt(code)) {
+      return res.status(400).json({ message: "Invalid verification code." });
+  }
+
+  try {
+    const username=userData.username;
+    const email=userData.email;
+    const phone=userData.phone;
+    const password=userData.password;
+    const gender=userData.gender;
+
+
+      const result = await authService.registerUser({ username, email, phone, password, gender,verified: true  });
+
+      console.log(result);
+
+      unverifiedUsers.delete(email);
+
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 31536000000,
+      });
+
+      res.status(200).json({ message: "Email verified successfully. You can now log in.",tokensecret: result.token });
+
+  } catch (error) {
+      res.status(500).json({ message: "Error saving user. Please try again." });
   }
 };
 
@@ -43,6 +111,7 @@ const getUserInfo = async (req, res) => {
 
 const updateId = async (req, res) => {
   try {
+    console.log(req.cookies);
     const token = req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized' });
@@ -176,6 +245,8 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
+    if (!user.verified) return res.status(403).json({ message: "Please verify your email before logging in." });
+
     if (!user.password) {
       return res.status(400).json({ message: 'Invalid account: No password found' });
     }
@@ -311,4 +382,4 @@ const updatuser = async (req, res) => {
 
 
 
-module.exports = { register, getUserInfo, updateId, google, status, googleLogin,login ,logout,savetoken,sendnotification,updatuser};
+module.exports = { register, getUserInfo, updateId, google, status, googleLogin,login ,logout,savetoken,sendnotification,updatuser,verifyEmail};
