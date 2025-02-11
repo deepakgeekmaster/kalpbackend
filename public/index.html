@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+        }
+
+        #title {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+        }
+
+        #description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        #survey-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .radio-group label,
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        #submit {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #submit:hover {
+            background-color: #5a4fd1;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 0 10px;
+            }
+
+            .radio-group,
+            .checkbox-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/jodit/4.0.1/es2021/jodit.min.css"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jodit/4.0.1/es2021/jodit.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="title">Daily Updates</h1>
+
+        <form id="survey-form" action="http://192.168.1.104:5000/api/dailyupdate/saveData" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name" id="name-label">Title</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="name" id="name-label">Description</label>
+                <textarea id="editor" name="editor"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="name" id="name-label">Image</label>
+                <input type="file" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category" id="name-label">Category</label>
+                    <select name="category" id="category">
+                        <option value="perfomanceMarketing">Perfomance Marketing</option>
+                        <option value="organicMarketing">Organic Marketing</option>
+                        <option value="smm">Social Media</option>
+                        <option value="content">Content Writting</option>
+                        <option value="developement">Developement</option>
+                        <option value="graphic">Graphic Designing</option>
+                    </select>
+            </div>
+
+    
+
+            <div class="form-group">
+                <input type="submit" id="submit" value="Submit Survey">
+            </div>
+        </form>
+    </div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit@3.6.2/build/jodit.min.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/jodit@3.6.2/build/jodit.min.js"></script>
+
+    <script>
+        window.addEventListener('load', function () {
+            const editor = new Jodit('#editor', {
+                height: 400,
+                buttons: [
+                    'bold', 'italic', 'underline', 'strikethrough', 
+                    '|', 'superscript', 'subscript', 
+                    '|', 'ul', 'ol', 
+                    '|', 'outdent', 'indent', 
+                    '|', 'font', 'fontsize', 'brush', 
+                    '|', 'paragraph', 'align', 
+                    '|', 'link', 'image', 'video', 'table',
+                    '|', 'hr', 'symbol', 'copyformat',
+                    '|', 'undo', 'redo', 'eraser', 'fullsize',
+                ],
+            });
+        });
+    </script>
+</body>
+
+</html>
