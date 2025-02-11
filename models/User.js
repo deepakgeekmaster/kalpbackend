@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   gameInProgress: { type: Boolean, default: false },
   whichGame: { type: String},
+  verified: { type: Boolean, default: false },
 
 }, { timestamps: true });
 
