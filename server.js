@@ -22,7 +22,7 @@ app.use(cookieParser());
 connectDB();
 
 app.get('/', function(req, res) {
-  res.send('index.html')
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.use('/api/auth', authRoutes);
