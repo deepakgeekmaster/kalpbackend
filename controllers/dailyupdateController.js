@@ -5,7 +5,10 @@ const User = require('../models/User');
 const Like = require('../models/Likes');
 const Comment = require('../models/Comments');
 const authController = require('./authController');
-const { put } = require("@vercel/blob");
+const fs = require("fs");
+const path = require("path");
+const axios = require("axios");
+const FormData = require("form-data");
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
@@ -26,6 +29,8 @@ const saveData = async (req, res) => {
             if (response.data.url) {
                 imageUrl = response.data.url;
             }
+                        fs.unlinkSync(filePath);
+
         } catch (error) {
             console.error("Upload error:", error);
             return res.status(500).json({ message: "File upload failed!" });
