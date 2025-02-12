@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/saveData', upload.single('name'), dailyupdateController.saveData);  // 'name' is the file input name
+router.post('/saveData', upload.single('file'), dailyupdateController.saveData);  // 'name' is the file input name
 
 router.get('/dauily-updates', dailyupdateController.getUpdates);
 
