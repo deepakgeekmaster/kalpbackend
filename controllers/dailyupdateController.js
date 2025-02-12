@@ -5,35 +5,52 @@ const User = require('../models/User');
 const Like = require('../models/Likes');
 const Comment = require('../models/Comments');
 const authController = require('./authController');
-const fs = require("fs");
-const axios = require("axios");
-const FormData = require("form-data");
+const ftp = require('basic-ftp');
+const fs = require('fs');
+
+
+
+async function uploadToFTP(filePath, fileName) {
+  const client = new ftp.Client();
+  client.ftp.verbose = true;
+
+  try {
+      await client.access({
+          host: 'ftp.kalpavrikshaacademy.in',
+          port: 21,
+          user: 'u277356541.deepak',
+          password: 'Work@9897',
+          secure: process.env.FTP_PORT == 22 // Use secure FTP if port is 22
+      });
+
+      await client.ensureDir('updates'); // Make sure the directory exists
+      await client.uploadFrom(filePath, path.join('updates', fileName)); // Upload file
+
+      console.log(`✅ Uploaded: ${fileName}`);
+      return `https://${process.env.FTP_HOST}${'updates'}${fileName}`; // Return the image URL
+  } catch (error) {
+      console.error('❌ FTP Upload Error:', error);
+      return null;
+  } finally {
+      client.close();
+  }
+}
+
+
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
-  let imageUrl = "";
+    let imageUrl = '';
+
     if (req.file) {
-        try {
-            // Send file to PHP server
-            const form = new FormData();
-              form.append("file", Buffer.from(req.file.buffer), {
-                filename: req.file.originalname,
-                contentType: req.file.mimetype,
-            });
+        const filePath = req.file.path;
+        const fileName = Date.now() + path.extname(req.file.originalname);
 
-            const response = await axios.post("https://kalpavrikshaacademy.in/delete-account/upload.php", form, {
-                headers: { ...form.getHeaders() },
-            });
+        // Upload image to FTP
+        imageUrl = await uploadToFTP(filePath, fileName);
 
-            if (response.data.url) {
-                imageUrl = response.data.url;
-            }
-                        fs.unlinkSync(filePath);
-
-        } catch (error) {
-            console.error("Upload error:", error);
-            return res.status(500).json({ message: "File upload failed!" });
-        }
+        // Delete local file after successful upload
+        fs.unlinkSync(filePath);
     }
 
 
