@@ -1,28 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const ftp = require('basic-ftp');
+const fs = require('fs');
 const path = require('path');
 const dailyupdateController = require('../controllers/dailyupdateController');
-const FormData = require("form-data");
-const fs = require("fs");
+const upload = require('../middlewares/multerConfig');  // Multer config
+
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = "/tmp"; // Use /tmp since Vercel is read-only except this directory
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
-
-router.post('/saveData', upload.single('file'), dailyupdateController.saveData);  // 'name' is the file input name
+router.post('/saveData', upload.single('image'), dailyupdateController.saveData);  // 'name' is the file input name
 
 router.get('/dauily-updates', dailyupdateController.getUpdates);
 
