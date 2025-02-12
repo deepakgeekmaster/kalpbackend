@@ -9,12 +9,31 @@ const { put } = require("@vercel/blob");
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
-    const image = req.file ? req.file.filename : ''; 
+  let imageUrl = "";
+    if (req.file) {
+        try {
+            // Send file to PHP server
+            const form = new FormData();
+            form.append("file", req.file.buffer, req.file.originalname);
+
+            const response = await axios.post("https://kalpavrikshaacademy.in/delete-account/upload.php", form, {
+                headers: { ...form.getHeaders() },
+            });
+
+            if (response.data.url) {
+                imageUrl = response.data.url;
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            return res.status(500).json({ message: "File upload failed!" });
+        }
+    }
+
 
     const newDailyUpdates = new DailyUpdates({
         title: name,  
         description: editor,  
-        image: image,  
+        image: imageUrl,  
         category:category
     });
     try 
