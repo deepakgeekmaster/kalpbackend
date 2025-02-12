@@ -18,7 +18,7 @@ const saveData = async (req, res) => {
             {
                 access: "public", 
                 contentType: req.file.mimetype,
-                token: "your-vercel-blob-token"
+                token: "vercel_blob_rw_vQjT7WJyoi8qpmOZ_oPHW1a3QRESTNbIOwtAWSh6WNszps3"
             }
         );
 
