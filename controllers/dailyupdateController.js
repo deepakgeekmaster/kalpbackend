@@ -9,23 +9,12 @@ const { put } = require("@vercel/blob");
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
-     if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-    }
-     const blob = await put(
-            `daily_updates/${Date.now()}_${req.file.originalname}`, 
-            req.file.buffer, 
-            {
-                access: "public", 
-                contentType: req.file.mimetype,
-                token: "vercel_blob_rw_vQjT7WJyoi8qpmOZ_oPHW1a3QRESTNbIOwtAWSh6WNszps3"
-            }
-        );
+    const image = req.file ? req.file.filename : ''; 
 
     const newDailyUpdates = new DailyUpdates({
         title: name,  
         description: editor,  
-        image: blob.url, 
+        image: image,  
         category:category
     });
     try 
