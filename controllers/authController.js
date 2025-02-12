@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const axios = require('axios');
 const ftp = require('basic-ftp');
 const fs = require('fs');
+const path = require('path');
 const POSTMARK_SERVER_TOKEN = "f3ea7eb0-1eda-440f-9287-78d1a9158fba";
 const SENDER_EMAIL = "deepak@geekmaster.io"
 
