@@ -14,7 +14,10 @@ const saveData = async (req, res) => {
         try {
             // Send file to PHP server
             const form = new FormData();
-            form.append("file", req.file.buffer, req.file.originalname);
+              form.append("file", Buffer.from(req.file.buffer), {
+                filename: req.file.originalname,
+                contentType: req.file.mimetype,
+            });
 
             const response = await axios.post("https://kalpavrikshaacademy.in/delete-account/upload.php", form, {
                 headers: { ...form.getHeaders() },
