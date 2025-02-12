@@ -163,7 +163,7 @@ const getUserInfo = async (req, res) => {
           const uploadedFileName = await uploadToFTP(req.file.buffer, fileName);
       
           if (uploadedFileName) {
-              updateFields.studentid = uploadedFileName; // Save only filename
+              updateFields.studnetid = uploadedFileName; // Save only filename
           } else {
               return res.status(500).json({ message: 'FTP Upload Failed' });
           }
