@@ -5,15 +5,27 @@ const User = require('../models/User');
 const Like = require('../models/Likes');
 const Comment = require('../models/Comments');
 const authController = require('./authController');
+const { put } = require("@vercel/blob");
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
-    const image = req.file ? req.file.filename : ''; 
+     if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+     const blob = await put(
+            `daily_updates/${Date.now()}_${req.file.originalname}`, 
+            req.file.buffer, 
+            {
+                access: "public", 
+                contentType: req.file.mimetype,
+                token: "your-vercel-blob-token"
+            }
+        );
 
     const newDailyUpdates = new DailyUpdates({
         title: name,  
         description: editor,  
-        image: image,  
+        image: blob.url, 
         category:category
     });
     try 
