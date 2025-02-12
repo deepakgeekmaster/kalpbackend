@@ -6,7 +6,6 @@ const Like = require('../models/Likes');
 const Comment = require('../models/Comments');
 const authController = require('./authController');
 const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
 
