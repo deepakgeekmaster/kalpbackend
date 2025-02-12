@@ -7,7 +7,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const passport = require('passport');
-const upload = require('../middlewares/multerConfig');  // Multer config
+const storage = multer.memoryStorage(); // Store file in memory buffer
+
+const upload = multer({ storage: storage });
 
 router.post('/login',authController.login);
 
