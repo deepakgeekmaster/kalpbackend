@@ -115,7 +115,7 @@ const getUserInfo = async (req, res) => {
 };
 
 
-  async function uploadToFTP(filePath, fileName) {
+  async function uploadToFTP(fileBuffer, fileName) {
     const client = new ftp.Client();
     client.ftp.verbose = true;
     try {
@@ -128,10 +128,10 @@ const getUserInfo = async (req, res) => {
         });
 
         await client.ensureDir('updates'); // Make sure the directory exists
-        await client.uploadFrom(filePath, fileName);
+        await client.uploadFrom(fileBuffer, fileName);
 
         console.log(`✅ Uploaded: ${fileName}`);
-        return `${fileName}`; // Return the image URL
+       return fileName;
     } catch (error) {
         console.error('❌ FTP Upload Error:', error);
         return null;
@@ -154,19 +154,17 @@ const getUserInfo = async (req, res) => {
       const updateFields = {};
   
       // Process image only if file is selected
-      if (req.file) {
-        const filePath = req.file.path;
-        const fileName = Date.now() + path.extname(req.file.originalname);
-  
-        // Upload image to FTP
-        const uploadedFileName = await uploadToFTP(filePath, fileName);
-  
-        if (uploadedFileName) {
-          updateFields.studentid = uploadedFileName; // Save only filename
-          fs.unlinkSync(filePath); // Delete local file after upload
-        } else {
-          return res.status(500).json({ message: 'FTP Upload Failed' });
-        }
+          if (req.file) {
+          const fileName = Date.now() + path.extname(req.file.originalname);
+      
+          // Upload image directly to FTP
+          const uploadedFileName = await uploadToFTP(req.file.buffer, fileName);
+      
+          if (uploadedFileName) {
+              updateFields.studentid = uploadedFileName; // Save only filename
+          } else {
+              return res.status(500).json({ message: 'FTP Upload Failed' });
+          }
       }
   
       // Process interests only if provided
