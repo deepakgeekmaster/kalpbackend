@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const PushToken = require('../models/PushToken'); 
 const crypto = require('crypto');
 const axios = require('axios');
-
+const ftp = require('basic-ftp');
+const fs = require('fs');
 const POSTMARK_SERVER_TOKEN = "f3ea7eb0-1eda-440f-9287-78d1a9158fba";
 const SENDER_EMAIL = "deepak@geekmaster.io"
 
@@ -35,9 +36,7 @@ const register = async (req, res) => {
   const { email, phone, password, gender, username } = req.body;
 
   try {
-    if (unverifiedUsers.has(email)) {
-        return res.status(400).json({ message: "A verification email has already been sent. Please verify your email." });
-    }
+    
     const verificationCode = crypto.randomInt(100000, 999999);
     unverifiedUsers.set(email, { username, email, phone, password, gender, verificationCode });
 
@@ -61,8 +60,13 @@ const verifyEmail = async (req, res) => {
       return res.status(404).json({ message: "No pending verification for this email." });
   }
 
-  if (userData.verificationCode !== parseInt(code)) {
-      return res.status(400).json({ message: "Invalid verification code." });
+  const parsedCode = parseInt(code, 10);
+  if (isNaN(parsedCode)) {
+    return res.status(400).json({ message: "Invalid verification code format." });
+  }
+
+  if (userData.verificationCode !== parsedCode) {
+    return res.status(400).json({ message: "Invalid verification code." });
   }
 
   try {
@@ -109,39 +113,83 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-const updateId = async (req, res) => {
-  try {
-    console.log(req.cookies);
-    const token = req.cookies.token;
-    if (!token) {
-      return res.status(401).json({ message: 'Unauthorized' });
+
+  async function uploadToFTP(filePath, fileName) {
+    const client = new ftp.Client();
+    client.ftp.verbose = true;
+    try {
+        await client.access({
+            host: 'ftp.kalpavrikshaacademy.in',
+            port: 21,
+            user: 'u277356541.deepak',
+            password: 'Work@9897',
+            secure: process.env.FTP_PORT == 22 // Use secure FTP if port is 22
+        });
+
+        await client.ensureDir('updates'); // Make sure the directory exists
+        await client.uploadFrom(filePath, fileName);
+
+        console.log(`✅ Uploaded: ${fileName}`);
+        return `${fileName}`; // Return the image URL
+    } catch (error) {
+        console.error('❌ FTP Upload Error:', error);
+        return null;
+    } finally {
+        client.close();
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const filePath = req.file ? req.file.path : null;
-    const interests = JSON.parse(req.body.interests);
-
-    const updateFields = { interests };
-    if (filePath) {
-      updateFields.studnetid = filePath;
-    }
-
-    const user = await User.findByIdAndUpdate(decoded.id, updateFields, {
-      new: true, // Return updated document
-      runValidators: true, // Ensure validation rules apply
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    return res.status(200).json({ message: 'User ID updated successfully', user });
-
-  } catch (error) {
-    console.error('Error updating user ID:', error);
-    return res.status(500).json({ message: 'Internal server error' });
   }
-};
+
+
+  
+
+  const updateId = async (req, res) => {
+    try {
+      const token = req.cookies.token;
+      if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+  
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const updateFields = {};
+  
+      // Process image only if file is selected
+      if (req.file) {
+        const filePath = req.file.path;
+        const fileName = Date.now() + path.extname(req.file.originalname);
+  
+        // Upload image to FTP
+        const uploadedFileName = await uploadToFTP(filePath, fileName);
+  
+        if (uploadedFileName) {
+          updateFields.studentid = uploadedFileName; // Save only filename
+          fs.unlinkSync(filePath); // Delete local file after upload
+        } else {
+          return res.status(500).json({ message: 'FTP Upload Failed' });
+        }
+      }
+  
+      // Process interests only if provided
+      if (req.body.interests) {
+        updateFields.interests = JSON.parse(req.body.interests);
+      }
+  
+      const user = await User.findByIdAndUpdate(decoded.id, updateFields, {
+        new: true,
+        runValidators: true,
+      });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      return res.status(200).json({ message: 'User ID updated successfully', user });
+  
+    } catch (error) {
+      console.error('Error updating user ID:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  
 
 
 
