@@ -8,6 +8,7 @@ const axios = require('axios');
 const ftp = require('basic-ftp');
 const fs = require('fs');
 const path = require('path');
+const { Readable } = require("stream");
 const POSTMARK_SERVER_TOKEN = "f3ea7eb0-1eda-440f-9287-78d1a9158fba";
 const SENDER_EMAIL = "deepak@geekmaster.io"
 
@@ -128,7 +129,8 @@ const getUserInfo = async (req, res) => {
         });
 
         await client.ensureDir('updates'); // Make sure the directory exists
-        await client.uploadFrom(fileBuffer, fileName);
+         const stream = Readable.from(fileBuffer);
+        await client.uploadFrom(stream, fileName);
 
         console.log(`✅ Uploaded: ${fileName}`);
        return fileName;
