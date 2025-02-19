@@ -29,7 +29,7 @@ async function uploadToFTP(fileBuffer, fileName) {
       await client.uploadFrom(stream,  path.join('updates', fileName));
 
       console.log(`✅ Uploaded: ${fileName}`);
-      return `https://${process.env.FTP_HOST}${'updates'}${fileName}`; // Return the image URL
+      return fileName;
   } catch (error) {
       console.error('❌ FTP Upload Error:', error);
       return null;
