@@ -26,7 +26,7 @@ async function uploadToFTP(fileBuffer, fileName) {
 
       await client.ensureDir('updates'); // Make sure the directory exists
       const stream = Readable.from(fileBuffer);
-      await client.uploadFrom(stream,  path.join('updates', fileName));
+      await client.uploadFrom(stream, fileName);
 
       console.log(`✅ Uploaded: ${fileName}`);
       return fileName;
