@@ -56,7 +56,7 @@ const saveData = async (req, res) => {
     const newDailyUpdates = new DailyUpdates({
         title: name,  
         description: editor,  
-        image: imageUrl,  
+        image: uploadedFileName,  
         category:category
     });
     try 
