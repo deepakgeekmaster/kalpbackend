@@ -24,7 +24,8 @@ async function uploadToFTP(filePath, fileName) {
       });
 
       await client.ensureDir('updates'); // Make sure the directory exists
-      await client.uploadFrom(filePath, path.join('updates', fileName)); // Upload file
+      const stream = Readable.from(fileBuffer);
+      await client.uploadFrom(stream,  path.join('updates', fileName));
 
       console.log(`✅ Uploaded: ${fileName}`);
       return `https://${process.env.FTP_HOST}${'updates'}${fileName}`; // Return the image URL
