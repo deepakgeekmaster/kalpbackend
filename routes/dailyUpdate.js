@@ -6,8 +6,9 @@ const fs = require('fs');
 const path = require('path');
 const dailyupdateController = require('../controllers/dailyupdateController');
 const upload = require('../middlewares/multerConfig');  // Multer config
+const storage = multer.memoryStorage(); // Store file in memory buffer
 
-
+const upload = multer({ storage: storage });
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
