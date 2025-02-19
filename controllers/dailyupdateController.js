@@ -42,14 +42,12 @@ async function uploadToFTP(fileBuffer, fileName) {
 
 const saveData = async (req, res) => {
     const { name, editor,category } = req.body; 
-    let imageUrl = '';
+    let uploadedFileName  = '';
 
     if (req.file) {
-        const filePath = req.file.path;
         const fileName = Date.now() + path.extname(req.file.originalname);
+        uploadedFileName = await uploadToFTP(req.file.buffer, fileName);
 
-        const uploadedFileName = await uploadToFTP(req.file.buffer, fileName);
-        // Delete local file after successful upload
     }
 
 
