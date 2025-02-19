@@ -48,11 +48,8 @@ const saveData = async (req, res) => {
         const filePath = req.file.path;
         const fileName = Date.now() + path.extname(req.file.originalname);
 
-        // Upload image to FTP
-        imageUrl = await uploadToFTP(filePath, fileName);
-
+        const uploadedFileName = await uploadToFTP(req.file.buffer, fileName);
         // Delete local file after successful upload
-        fs.unlinkSync(filePath);
     }
 
 
