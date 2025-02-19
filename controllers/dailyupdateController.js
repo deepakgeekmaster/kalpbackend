@@ -11,7 +11,7 @@ const { Readable } = require("stream");
 
 
 
-async function uploadToFTP(filePath, fileName) {
+async function uploadToFTP(fileBuffer, fileName) {
   const client = new ftp.Client();
   client.ftp.verbose = true;
 
